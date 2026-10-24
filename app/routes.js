@@ -1,4 +1,4 @@
-module.exports = function(app, passport, db) {
+module.exports = function(app, passport, db,ObjectID) {
 
 // normal routes ===============================================================
 
@@ -29,6 +29,7 @@ module.exports = function(app, passport, db) {
 // message board routes ===============================================================
 
     app.post('/messages', (req, res) => {
+    
       db.collection('messages').save({name: req.body.name, msg: req.body.msg, thumbUp: 0, thumbDown:0}, (err, result) => {
         if (err) return console.log(err)
         console.log('saved to database')
@@ -36,13 +37,36 @@ module.exports = function(app, passport, db) {
       })
     })
 
-    app.put('/messages', (req, res) => {
+
+    app.put('/thumbUp', (req, res) => {
+      console.log(req.body)
       db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
-        $set: {
-          thumbUp:req.body.thumbUp + 1
-        }
+      .findOneAndUpdate({
+        _id: new ObjectID(req.body.id)
       }, {
+        $inc: { thumbUp: 1 }
+      }, 
+      
+      {
+        sort: {_id: -1},
+        upsert: true
+      }, (err, result) => {
+        if (err) return res.send(err)
+        res.send(result)
+      })
+    })
+     
+
+      app.put('/thumbDown', (req, res) => {
+      console.log(req.body)
+      db.collection('messages')
+      .findOneAndUpdate({
+        _id: new ObjectID(req.body.id) // update by id 
+      }, {
+        $inc: { thumbUp: -1 } // decrement by one
+      }, 
+      
+      {
         sort: {_id: -1},
         upsert: true
       }, (err, result) => {
@@ -51,9 +75,11 @@ module.exports = function(app, passport, db) {
       })
     })
 
+
     app.delete('/messages', (req, res) => {
-      db.collection('messages').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
-        if (err) return res.send(500, err)
+      db.collection('messages').findOneAndDelete({_id: new ObjectID(req.body.id)}, (err, result) => {
+        if (err) return res.status(500).send(err)
+        if (!result.value) return res.sendStatus(404)
         res.send('Message deleted!')
       })
     })
@@ -107,6 +133,7 @@ module.exports = function(app, passport, db) {
     });
 
 };
+
 
 // route middleware to ensure user is logged in
 function isLoggedIn(req, res, next) {

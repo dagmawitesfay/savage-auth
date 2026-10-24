@@ -5,3 +5,20 @@ body{
 img{
   height: 200px;
 }
+
+.delete-message{
+  width: 30px;
+  height: 30px;
+  background-color: blanchedalmond;
+}
+.message{
+ width: 300px;
+ border: 1px solid burlywood;
+ border-radius: 10px;
+ padding: 10px; 
+ margin: 10px;
+}
+ul li {
+  list-style: none;
+
+}
