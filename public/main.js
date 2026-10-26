@@ -1,7 +1,7 @@
 
 const thumbUp = document.getElementsByClassName("fa-thumbs-up");
 const thumbDown = document.getElementsByClassName("fa-thumbs-down");
- const  trash = document.querySelector(".delete-message");
+const trash = document.querySelectorAll(".delete-message");
 
 Array.from(thumbUp).forEach(function(element) {
       element.addEventListener('click', function() {
@@ -52,20 +52,25 @@ Array.from(thumbDown).forEach(function(element) {
 
 
 Array.from(trash).forEach(function(element) {
-  console.log(element)
-      element.addEventListener('click', function() {
-         const id = this.parentNode.parentNode.childNodes[1].dataset.userId
-        fetch('/messages', {
-          method: 'delete',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ id })
-        }).then(function(response) {
-          if (!response.ok) throw new Error('Could not delete the message')
-          window.location.reload()
-        }).catch(function(error) {
-          console.error(error)
-        })
-      });
+  element.addEventListener('click', function() {
+    const message = this.closest(".message");
+    const id = message.querySelector("[data-user-id]")?.dataset.userId;
+    if (!id) {
+      console.error('Could not find the message ID')
+      return
+    }
+
+    fetch('/messages', {
+      method: 'delete',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id })
+    }).then(function(response) {
+      if (!response.ok) throw new Error('Could not delete the message')
+      window.location.reload()
+    }).catch(function(error) {
+      console.error(error)
+    })
+  });
 });
